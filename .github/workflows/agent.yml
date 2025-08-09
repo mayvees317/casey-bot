@@ -2,25 +2,44 @@ name: Agent Autopilot
 on:
   workflow_dispatch:
   push:
-    paths: [GOAL.md]      # re-run whenever you edit the goal
+    paths: [GOAL.md]
   schedule:
-    - cron: "0 */6 * * *" # every 6 hours
+    - cron: "0 */6 * * *"
+
 jobs:
   run:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}   # 👈 run from repo root
     permissions:
       contents: write
       pull-requests: write
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements.txt
+
+      - name: Show workspace
+        run: |
+          pwd
+          ls -la
+          echo "--- agents ---"
+          ls -la agents || true
+          echo "--- goal ---"
+          cat GOAL.md || true
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
       - name: Run agent
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python agent_runner.py
+
       - name: Commit changes (if any)
         run: |
           git config user.name "caseybot-agent"
