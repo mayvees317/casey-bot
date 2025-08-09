@@ -36,9 +36,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run agent
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python agent_runner.py
+        working-directory: ${{ github.workspace }}
 
       - name: Commit changes (if any)
         run: |
